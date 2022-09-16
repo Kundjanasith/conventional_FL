@@ -13,7 +13,6 @@ num_samples = int(config['TRAINING']['NUM_SAMPLES'])
 local_batch_size = int(config['TRAINING']['LOCAL_BATCH_SIZE'])
 local_epochs = int(config['TRAINING']['LOCAL_EPOCHS'])
 hostname = socket.gethostname()
-hostname = socket.gethostbyname(hostname)
 logging.basicConfig(filename="%s_log.txt"%hostname, level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 for e in range(num_communication_rounds):
