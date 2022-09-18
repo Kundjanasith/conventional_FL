@@ -5,7 +5,7 @@ import utils
 config = configparser.ConfigParser()
 config.read('../config.ini')
 
-group = 'NAIST_'
+group = 'UFL_'
 
 trainer_ip = ast.literal_eval(config['DISTRIBUTION']['TRAINER_IP'])
 num_communication_rounds = int(config['TRAINING']['NUM_COMMUNICATION_ROUNDS'])

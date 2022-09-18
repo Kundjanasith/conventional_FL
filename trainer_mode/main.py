@@ -5,7 +5,7 @@ import utils
 config = configparser.ConfigParser()
 config.read('../config.ini')
 
-group = 'NAIST_'
+group = 'UFL_'
 
 aggregator_ip = config['DISTRIBUTION']['%sAGGREGATOR_IP'%group]
 num_communication_rounds = int(config['TRAINING']['NUM_COMMUNICATION_ROUNDS'])
