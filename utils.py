@@ -34,7 +34,97 @@ class ClientThread(Thread):
             f.close()
         time.sleep(1)
 
-def send_model(tcp_ip, tcp_port, file_path, to_path):
+class ClientThread0(Thread):
+    def __init__(self,tcp_ip, tcp_port, file_path, to_path):
+        Thread.__init__(self)
+        self._running = True
+        self.tcp_ip = tcp_ip
+        self.tcp_port = tcp_port
+        self.file_path = file_path
+        self.to_path = to_path
+    
+    def terminate(self):
+        self._running = False
+
+    def run(self):
+        TCP_IP = self.tcp_ip
+        TCP_PORT = self.tcp_port
+        BUFFER_SIZE = 1024
+        SEPARATOR = "<SEPARATOR>"
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print('XXXX',TCP_IP, TCP_PORT)
+        s.connect((TCP_IP, TCP_PORT))
+        s.send(bytes(f"{self.file_path.split('/')[1]}{SEPARATOR}{self.to_path}",'UTF-8'))
+        time.sleep(10)
+        with open(self.file_path, 'rb') as f:
+            while True:
+                bytes_read = f.read(BUFFER_SIZE)
+                if not bytes_read:
+                    break
+                while True:
+                    try:
+                        s.sendall(bytes_read)
+                        print('SEND COMPLETE')
+                        break
+                    except Exception as e:
+                        print(e)
+                        pass
+            f.close()
+        time.sleep(1)
+        s.close()
+        self.terminate()
+    
+class ClientThread1(Thread):
+    def __init__(self,ip,port):
+        Thread.__init__(self)
+        self.ip = ip
+        self.port = port
+        print(" New thread started for "+ip+":"+str(port))
+    
+    def terminate(self):
+        self._running = False
+
+    def run(self):
+        TCP_IP = self.ip
+        TCP_PORT = self.port
+        BUFFER_SIZE = 1024
+        SEPARATOR = "<SEPARATOR>"
+        tcpsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tcpsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        tcpsock.bind((TCP_IP, TCP_PORT))
+        print('START TRUE')
+        while True:
+            tcpsock.listen()
+            print("Waiting for incoming connections...")
+            (conn, (self.ip,self.port)) = tcpsock.accept()
+            received = conn.recv(BUFFER_SIZE)
+            received = received.decode('UTF-8')
+            filename, file_path = received.split(SEPARATOR)
+            with open(file_path+'/'+filename, "wb") as f:
+                while True:
+                    bytes_read = conn.recv(BUFFER_SIZE)
+                    if not bytes_read:  
+                        print('NOT BYTE READS')  
+                        break
+                    f.write(bytes_read)
+                f.close()
+            break
+            # time.sleep(1)
+            print('END LOOP')
+        print('OUT LOOP')
+        self.terminate()
+
+        # with open(self.file_path, "wb") as f:
+        #     while True:
+        #         bytes_read = self.sock.recv(self.buffer)
+        #         if not bytes_read:    
+        #             break
+        #         f.write(bytes_read)
+        #     f.close()
+        # time.sleep(1)
+        # self.terminate()
+
+def sending(tcp_ip, tcp_port, file_path, to_path):
     TCP_IP = tcp_ip
     TCP_PORT = tcp_port
     BUFFER_SIZE = 1024
@@ -43,7 +133,7 @@ def send_model(tcp_ip, tcp_port, file_path, to_path):
     print('XXXX',TCP_IP, TCP_PORT)
     s.connect((TCP_IP, TCP_PORT))
     s.send(bytes(f"{file_path.split('/')[1]}{SEPARATOR}{to_path}",'UTF-8'))
-    time.sleep(10)
+    # time.sleep(10)
     with open(file_path, 'rb') as f:
         while True:
             bytes_read = f.read(BUFFER_SIZE)
@@ -56,60 +146,91 @@ def send_model(tcp_ip, tcp_port, file_path, to_path):
                     break
                 except Exception as e:
                     print(e)
+                    return 'error'
                     pass
         f.close()
     time.sleep(1)
     s.close()
     return 'complete'
 
-def broadcast_model(tcp_ip_list, file_path, to_path):
+def send_model(tcp_ip, tcp_port, file_path, to_path):
+    while True:
+        res = sending(tcp_ip, tcp_port, file_path, to_path)
+        if res == 'complete':
+            break
+    return 'complete'
+    
+
+# def broadcast_model(tcp_ip_list, file_path, to_path): #OG
+#     for ipx in tcp_ip_list:
+#         ip = ipx.split(':')[0]
+#         tcp_port = int(ipx.split(':')[1])
+#         # os.system('cp %s %s'%(file_path,file_path+ip))
+#         time.sleep(10)
+#         print('start transfer %s to %s'%(file_path,ip))
+#         res = send_model(ip, tcp_port, file_path, to_path)
+#         # print(res)
+#         # os.system('rm -rf %s'%(file_path+ip))
+#         time.sleep(10)
+#         print('end transfer %s to %s'%(file_path,ip))
+#     return 'complete'
+
+def broadcast_model(tcp_ip_list, file_path, to_path): #MOD
     for ipx in tcp_ip_list:
+        
         ip = ipx.split(':')[0]
         tcp_port = int(ipx.split(':')[1])
-        # os.system('cp %s %s'%(file_path,file_path+ip))
-        time.sleep(10)
-        print('start transfer %s to %s'%(file_path,ip))
-        res = send_model(ip, tcp_port, file_path, to_path)
-        # print(res)
-        # os.system('rm -rf %s'%(file_path+ip))
-        time.sleep(10)
-        print('end transfer %s to %s'%(file_path,ip))
+        c = ClientThread0(ip,tcp_port,file_path,to_path)
+        c.run()
+
+        # # os.system('cp %s %s'%(file_path,file_path+ip))
+        # time.sleep(10)
+        # print('start transfer %s to %s'%(file_path,ip))
+        # res = send_model(ip, tcp_port, file_path, to_path)
+        # # print(res)
+        # # os.system('rm -rf %s'%(file_path+ip))
+        # time.sleep(10)
+        # print('end transfer %s to %s'%(file_path,ip))
     return 'complete'
 
 def receive_model(tcp_ip, tcp_port):
-    TCP_IP = tcp_ip
-    TCP_PORT = tcp_port
-    BUFFER_SIZE = 1024
-    SEPARATOR = "<SEPARATOR>"
-    tcpsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tcpsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    tcpsock.bind((TCP_IP, TCP_PORT))
-    threads = []
-    while True:
-        tcpsock.listen(5)
-        print("Waiting for incoming connections...")
-        (conn, (ip,port)) = tcpsock.accept()
-        # received = conn.recv(BUFFER_SIZE).decode()
-        received = conn.recv(BUFFER_SIZE)
-        print(received)
-        received = received.decode('UTF-8')
-        filename, file_path = received.split(SEPARATOR)
+    thread = ClientThread1(tcp_ip,tcp_port)
+    thread.run()
+    # TCP_IP = tcp_ip
+    # TCP_PORT = tcp_port
+    # BUFFER_SIZE = 1024
+    # SEPARATOR = "<SEPARATOR>"
+    # tcpsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # tcpsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    # tcpsock.bind((TCP_IP, TCP_PORT))
+    # threads = []
+    # while True:
+    #     tcpsock.listen(10)
+    #     print("Waiting for incoming connections...")
+    #     (conn, (ip,port)) = tcpsock.accept()
+    #     # received = conn.recv(BUFFER_SIZE).decode()
+    #     received = conn.recv(BUFFER_SIZE)
+    #     print(received)
+    #     received = received.decode('UTF-8')
+    #     filename, file_path = received.split(SEPARATOR)
 
 
-        # filename, file_path = received.split(bytes(SEPARATOR,'UTF-8'))
-        # print(filename, file_path)
-        # filename = filename.decode('UTF-8')
-        # file_path = file_path.decode('UTF-8')
-        print('Got connection from ', (ip,port,file_path,filename))
-        newthread = ClientThread(tcp_ip,tcp_port,conn,file_path+'/'+filename,BUFFER_SIZE)
-        newthread.start()
-        threads.append(newthread)
-        time.sleep(10)
-        if os.path.exists(file_path+'/'+filename):
-            break
-    for t in threads:
-        t.join()
+    #     # filename, file_path = received.split(bytes(SEPARATOR,'UTF-8'))
+    #     # print(filename, file_path)
+    #     # filename = filename.decode('UTF-8')
+    #     # file_path = file_path.decode('UTF-8')
+    #     print('Got connection from ', (ip,port,file_path,filename))
+    #     newthread = ClientThread1(tcp_ip,tcp_port,conn,file_path+'/'+filename,BUFFER_SIZE)
+    #     newthread.start()
+    #     # newthread.run()
+    #     threads.append(newthread)
+    #     # time.sleep(10)
+    #     if os.path.exists(file_path+'/'+filename):
+    #         break
+    # for t in threads:
+    #     t.join()
     return 'complete'
+
 
 
 def load_dataset():
@@ -197,3 +318,4 @@ def aggregated(model_path):
             w_arr.append(w_avg)
         aggregated_model.get_layer(index=l_idx).set_weights(w_arr)
     return aggregated_model
+
