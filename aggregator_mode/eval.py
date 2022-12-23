@@ -19,7 +19,7 @@ for ip in trainer_ip:
     file_out.write(ip+',')
 file_out.write('global\n')
 
-for e in range(1,101):
+for e in range(1,11):
     file_out.write('%d,'%e)
     list_trained_models = glob.glob('trained_models/*_ep%d.h5'%e)
     list_trained_models.sort()

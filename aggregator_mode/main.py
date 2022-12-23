@@ -3,7 +3,7 @@ sys.path.insert(1, '..')
 import utils
 
 config = configparser.ConfigParser()
-config.read('../config.ini')
+config.read('../config_temp0.ini')
 
 group = 'UFL_'
 
@@ -25,7 +25,7 @@ while not os.path.exists('aggregated_models/model_ep%d.h5'%(0)):
 logging.info("[COMPLETE] RECEIVE INIT MODEL")
 
 logging.info("[START] BROADCAST INIT MODEL")
-utils.broadcast_model(trainer_ip,19192,'aggregated_models/model_ep%d.h5'%(0), 'aggregated_models')
+utils.broadcast_model(trainer_ip,'aggregated_models/model_ep%d.h5'%(0), 'aggregated_models')
 logging.info("[COMPLETE] BROADCAST INIT MODEL")
 
 for e in range(num_communication_rounds):
@@ -72,5 +72,5 @@ for e in range(num_communication_rounds):
     logging.info("[COMPLETE] AGGREGATING TRAINED MODEL IN EP%d"%e)
 
     logging.info("[START] BROADCAST AGGREGATED MODEL IN EP%d"%e)
-    utils.broadcast_model(trainer_ip,19192,'aggregated_models/model_ep%d.h5'%(e+1), 'aggregated_models')
+    utils.broadcast_model(trainer_ip,'aggregated_models/model_ep%d.h5'%(e+1), 'aggregated_models')
     logging.info("[COMPLETE] BROADCAST AGGREGATED MODEL IN EP%d"%e)

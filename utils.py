@@ -62,8 +62,10 @@ def send_model(tcp_ip, tcp_port, file_path, to_path):
     s.close()
     return 'complete'
 
-def broadcast_model(tcp_ip_list, tcp_port, file_path, to_path):
-    for ip in tcp_ip_list:
+def broadcast_model(tcp_ip_list, file_path, to_path):
+    for ipx in tcp_ip_list:
+        ip = ipx.split(':')[0]
+        tcp_port = int(ipx.split(':')[1])
         # os.system('cp %s %s'%(file_path,file_path+ip))
         time.sleep(10)
         print('start transfer %s to %s'%(file_path,ip))

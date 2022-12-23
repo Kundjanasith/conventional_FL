@@ -3,9 +3,10 @@ sys.path.insert(1, '..')
 import utils
 
 config = configparser.ConfigParser()
-config.read('../config.ini')
+config.read('../config_temp0.ini')
 
 group = 'UFL_'
+trainer_port = sys.argv[1]
 
 aggregator_ip = config['DISTRIBUTION']['%sAGGREGATOR_IP'%group]
 num_communication_rounds = int(config['TRAINING']['NUM_COMMUNICATION_ROUNDS'])
@@ -18,7 +19,7 @@ logging.basicConfig(filename="%s_log.txt"%hostname, level=logging.DEBUG, format=
 for e in range(num_communication_rounds):
 
     logging.info("[START] RECEIVE AGGREGATED MODEL IN EP%d"%e)
-    utils.receive_model('0.0.0.0',19192)
+    utils.receive_model('0.0.0.0',int(trainer_port))
     logging.info("[COMPLETE] RECEIVE AGGREGATED MODEL IN EP%d"%e)
 
     logging.info("[START] TRAIN LOCAL MODEL IN EP%d"%e)
@@ -39,10 +40,10 @@ for e in range(num_communication_rounds):
     x_train, y_train = utils.sampling_data(num_samples)
     model.compile(optimizer='sgd', loss='categorical_crossentropy', metrics=['accuracy'])
     model.fit(x_train, y_train,epochs=local_epochs,batch_size=local_batch_size,verbose=1,validation_split=0.2)
-    model.save_weights('trained_models/%s_ep%d.h5'%(hostname,e))
+    model.save_weights('trained_models/%s_ep%d.h5'%('0.0.0.0:'+trainer_port,e))
     logging.info("[COMPLETE] TRAIN LOCAL MODEL IN EP%d"%e)
 
     logging.info("[START] SEND TRAINED MODEL IN EP%d"%e)
-    utils.send_model(aggregator_ip, 19191,'trained_models/%s_ep%d.h5'%(hostname,e), 'trained_models')
+    utils.send_model(aggregator_ip, 19191,'trained_models/%s_ep%d.h5'%('0.0.0.0:'+trainer_port,e), 'trained_models')
     logging.info("[COMPLETE] SEND TRAINED MODEL IN EP%d"%e)
 
