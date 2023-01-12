@@ -3,7 +3,7 @@ sys.path.insert(1, '..')
 import utils
 
 config = configparser.ConfigParser()
-config.read('../config_temp0.ini')
+config.read('../config_exp0.ini')
 
 group = 'UFL_'
 
