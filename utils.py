@@ -98,7 +98,7 @@ class ClientThread1(Thread):
             print("Waiting for incoming connections...")
             (conn, (self.ip,self.port)) = tcpsock.accept()
             received = conn.recv(BUFFER_SIZE)
-            # received = received.decode('UTF-8')
+            received = received.decode('UTF-8')
             filename, file_path = received.split(SEPARATOR)
             with open(file_path+'/'+filename, "wb") as f:
                 while True:
@@ -109,7 +109,7 @@ class ClientThread1(Thread):
                     f.write(bytes_read)
                 f.close()
             break
-            # time.sleep(1)
+            time.sleep(1)
             print('END LOOP')
         print('OUT LOOP')
         self.terminate()
