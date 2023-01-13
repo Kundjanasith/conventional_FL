@@ -111,7 +111,7 @@ class ClientThread1(Thread):
                     f.write(bytes_read)
                 f.close()
             break
-            time.sleep(1)
+            time.sleep(10)
             print('END LOOP')
         print('OUT LOOP')
         self.terminate()
@@ -135,7 +135,7 @@ def sending(tcp_ip, tcp_port, file_path, to_path):
     print('XXXX',TCP_IP, TCP_PORT)
     s.connect((TCP_IP, TCP_PORT))
     s.send(bytes(f"{file_path.split('/')[1]}{SEPARATOR}{to_path}",'UTF-8'))
-    # time.sleep(10)
+    time.sleep(10)
     with open(file_path, 'rb') as f:
         while True:
             bytes_read = f.read(BUFFER_SIZE)
@@ -151,7 +151,7 @@ def sending(tcp_ip, tcp_port, file_path, to_path):
                     return 'error'
                     pass
         f.close()
-    time.sleep(1)
+    time.sleep(10)
     s.close()
     return 'complete'
 
