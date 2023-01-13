@@ -54,7 +54,9 @@ class ClientThread0(Thread):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print('XXXX',TCP_IP, TCP_PORT)
         s.connect((TCP_IP, TCP_PORT))
-        s.send(bytes(f"{self.file_path.split('/')[1]}{SEPARATOR}{self.to_path}",'UTF-8'))
+        # s.send(bytes(f"{self.file_path.split('/')[1]}{SEPARATOR}{self.to_path}",'UTF-8'))
+        msg = self.file_path.split('/')[1]+SEPARATOR+self.to_path
+        s.send(msg.encode('UTF-8'))
         time.sleep(10)
         with open(self.file_path, 'rb') as f:
             while True:
